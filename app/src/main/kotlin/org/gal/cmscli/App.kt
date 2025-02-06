@@ -4,26 +4,81 @@
 package org.gal.cmscli
 
 import org.gal.cmscli.dsl.ItemType
+import org.gal.cmscli.dsl.constrainedByProperty
+import org.gal.cmscli.dsl.dependsOnBean
+import org.gal.cmscli.dsl.filteringBean
 import org.gal.cmscli.finder.findSmartEditBeansFile
 import org.gal.cmscli.finder.findSmartEditComponentsFile
+import java.io.File
 
 private const val ITEM_TYPES_CLOSING_TAG = "</itemtypes>"
+private const val BEANS_TYPE_CLOSING_TAG = "</beans>"
 
 fun main() {
     val itemTypes = generateComponents()
     val componentFile = findSmartEditComponentsFile()
     val beanFile = findSmartEditBeansFile()
-    componentFile?.let {
-        // TODO: enhance performances using RandomAccessFile to avoid rewriting all file
-        val oldContent = it.readText()
-        val xmlToAppend = itemTypes.map(ItemType::toXml)
-            .joinToString(System.lineSeparator())
-        val newContent = oldContent.replace(
-            ITEM_TYPES_CLOSING_TAG,
-            "$xmlToAppend${System.lineSeparator()}$ITEM_TYPES_CLOSING_TAG"
-        )
-        componentFile.writeText(newContent)
+    // TODO: enhance performances using RandomAccessFile to avoid rewriting all files
+    componentFile?.also {
+        generateAndWriteItemsTypesToSmartEditXml(it, itemTypes)
     }
-    componentFile?.also { println("New components are generated in ${it.absolutePath}") }
+    beanFile?.also {
+        generateAndWriteBeansToSmartEdit(beanFile, itemTypes)
+    }
 }
 
+private fun generateAndWriteItemsTypesToSmartEditXml(
+    componentFile: File,
+    itemTypes: List<ItemType>,
+) {
+    val oldContent = componentFile.readText()
+    val xmlToAppend = itemTypes
+        .map(ItemType::toXml)
+        .joinToString(System.lineSeparator())
+    val newContent = oldContent.replace(
+        ITEM_TYPES_CLOSING_TAG,
+        "$xmlToAppend${System.lineSeparator()}$ITEM_TYPES_CLOSING_TAG"
+    )
+    componentFile.writeText(newContent)
+    println("New components are generated in ${componentFile.absolutePath}")
+}
+
+private fun generateAndWriteBeansToSmartEdit(beanFile: File, itemTypes: List<ItemType>) {
+    val oldContent = beanFile.readText()
+    val xmlToAppend = itemTypes.filter { it.isOrdered }
+        .map {
+            val customAttributeFilterName = "custom${it.code}AttributeFilter"
+            filteringBean {
+                id = customAttributeFilterName
+                constrainedByProperty {
+                    bean {
+                        typeCode = it.code
+                    }
+                }
+                property {
+                    name = "order"
+                    list {
+                        it.attributes.getAttribute().forEach {
+                            value(it.qualifier)
+                        }
+                    }
+                }
+            }.toXml()
+                .plus(System.lineSeparator())
+                .plus(System.lineSeparator())
+                .plus(
+                    dependsOnBean {
+                        property {
+                            ref = customAttributeFilterName
+                        }
+                    }.toXml()
+                )
+        }.joinToString(System.lineSeparator())
+
+    val newContent = oldContent.replace(
+        BEANS_TYPE_CLOSING_TAG,
+        "$xmlToAppend${System.lineSeparator()}$BEANS_TYPE_CLOSING_TAG"
+    )
+    beanFile.writeText(newContent)
+    println("New beans are generated in ${beanFile.absolutePath}")
+}

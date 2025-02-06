@@ -8,15 +8,14 @@
 
 *Note: the tool work as long as SAP Commerce project is already present somewhere under HOME folder. First execution will take some time to init everything but is fast after.*
 
-*Note : the very first execution of the program may takes time because it creates cache information to access very quickly smartedit resources. Any other execution is very fast.*
-
 # DSL definition
 
-To generation new components, the DSL follows the XML hierarchy expected by SmartEdit :
+To generate new components, the DSL follows the XML hierarchy expected by SmartEdit :
 
 ```kotlin
 fun generateComponents() = listOf( // Inside the list, as many component as needed can be instanciated 
     itemType {
+        // isOrdered = false // Uncomment to disable ordering of attributes
         code = "SampleCmsComponent" // The item type identifier
         attributes {
             attribute {
@@ -41,3 +40,5 @@ fun generateComponents() = listOf( // Inside the list, as many component as need
 For any level in the DSL, press `Ctrl or Cmd` + `<space>` to trigger completion and see what are the available properties as shown in following screeshot :
 
 ![completionExample](./completionExample.png)
+
+*Note: If ordering of components is not disabled, attributes will be automatically be ordered by beans in SmartEdit in the same order as they have been defined in the DSL.*

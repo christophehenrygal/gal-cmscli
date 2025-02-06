@@ -1,5 +1,6 @@
 package org.gal.cmscli.dsl
 
+import com.fasterxml.jackson.annotation.JsonIgnore
 import com.fasterxml.jackson.annotation.JsonInclude
 import com.fasterxml.jackson.dataformat.xml.XmlMapper
 import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlElementWrapper
@@ -38,17 +39,14 @@ data class ItemType(
     @field:JacksonXmlProperty(isAttribute = true)
     var jaloclass: String = "",
     val attributes: Attributes = Attributes(),
+    @field:JsonIgnore
+    var isOrdered: Boolean = true,
 ) {
     fun attributes(builder: @Scoped Attributes.() -> Unit) {
         attributes.apply(builder)
     }
 
-    fun toXml(): String {
-        val mapper = XmlMapper()
-        mapper.setSerializationInclusion(JsonInclude.Include.NON_NULL);
-        mapper.setSerializationInclusion(JsonInclude.Include.NON_EMPTY);
-        return mapper.writeValueAsString(this)
-    }
+    fun toXml() = objectToXml(this)
 }
 
 data class Attributes(
