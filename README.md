@@ -6,7 +6,9 @@
 4. Start generation by running command : `./gradlew run`
 5. Open the modified file in the IDE and auto format the code (search for `smarteditmodule-items.xml`). Component XML definition is available at the end of the file
 
-Note: the tool work as long as SAP Commerce project is already present somewhere under HOME folder. First execution will take some time to init everything but is fast after.
+*Note: the tool work as long as SAP Commerce project is already present somewhere under HOME folder. First execution will take some time to init everything but is fast after.*
+
+*Note : the very first execution of the program may takes time because it creates cache information to access very quickly smartedit resources. Any other execution is very fast.*
 
 # DSL definition
 

@@ -4,14 +4,16 @@
 package org.gal.cmscli
 
 import org.gal.cmscli.dsl.ItemType
+import org.gal.cmscli.finder.findSmartEditBeansFile
 import org.gal.cmscli.finder.findSmartEditComponentsFile
 
 private const val ITEM_TYPES_CLOSING_TAG = "</itemtypes>"
 
 fun main() {
     val itemTypes = generateComponents()
-    val file = findSmartEditComponentsFile()
-    file?.let {
+    val componentFile = findSmartEditComponentsFile()
+    val beanFile = findSmartEditBeansFile()
+    componentFile?.let {
         // TODO: enhance performances using RandomAccessFile to avoid rewriting all file
         val oldContent = it.readText()
         val xmlToAppend = itemTypes.map(ItemType::toXml)
@@ -20,8 +22,8 @@ fun main() {
             ITEM_TYPES_CLOSING_TAG,
             "$xmlToAppend${System.lineSeparator()}$ITEM_TYPES_CLOSING_TAG"
         )
-        file.writeText(newContent)
+        componentFile.writeText(newContent)
     }
-    file?.also { println("New components are generated in ${it.absolutePath}") }
+    componentFile?.also { println("New components are generated in ${it.absolutePath}") }
 }
 
