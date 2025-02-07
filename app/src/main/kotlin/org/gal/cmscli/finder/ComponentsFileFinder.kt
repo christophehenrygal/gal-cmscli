@@ -4,6 +4,10 @@ import java.io.File
 
 const val DEFAULT_COMPONENT_FILE_NAME = "galsmarteditmodule-items.xml"
 const val DEFAULT_BEAN_FILE_NAME= "galsmarteditmodule-spring.xml"
+const val DEFAULT_DE_LABELS_FILE_NAME = "galsmarteditmodule-locales_de.properties"
+const val DEFAULT_FR_LABELS_FILE_NAME = "galsmarteditmodule-locales_fr.properties"
+const val DEFAULT_IT_LABELS_FILE_NAME = "galsmarteditmodule-locales_it.properties"
+const val DEFAULT_EN_LABELS_FILE_NAME = "galsmarteditmodule-locales_en.properties"
 const val HOME_FOLDER_PROPERTY = "user.home"
 const val GAL_HYBRIS_PATH_PART = "/gal-hybris/"
 const val GAL_HYBRIS_RESOURCES_PART = "/resources/"
@@ -11,7 +15,12 @@ const val CACHE_FILE_PATH = "./componentFileCache.txt"
 
 fun findSmartEditComponentsFile() = findFile(DEFAULT_COMPONENT_FILE_NAME)
 fun findSmartEditBeansFile() = findFile(DEFAULT_BEAN_FILE_NAME)
+fun findSmartEditDeLabelsFile() = findFile(DEFAULT_DE_LABELS_FILE_NAME)
+fun findSmartEditFrLabelsFile() = findFile(DEFAULT_FR_LABELS_FILE_NAME)
+fun findSmartEditItLabelsFile() = findFile(DEFAULT_IT_LABELS_FILE_NAME)
+fun findSmartEditEnLabelsFile() = findFile(DEFAULT_EN_LABELS_FILE_NAME)
 
+// TODO : Improve performance of searching by caching gal-hybris project dir and searching from there each file
 fun findFile(fileName: String): File? {
     val cachedFile = mayFindCachedFile(fileName)
     if (cachedFile != null) return cachedFile

@@ -6,5 +6,9 @@ app/build
 
 galsmarteditmodule-itemsCache.txt
 galsmarteditmodule-springCache.txt
+galsmarteditmodule-locales_de.properties
+galsmarteditmodule-locales_en.properties
+galsmarteditmodule-locales_fr.properties
+galsmarteditmodule-locales_it.properties
 
 ./app/src/main/kotlin/org/gal/cmscli/ComponentsToAdd.kt

@@ -7,8 +7,7 @@ import org.gal.cmscli.dsl.ItemType
 import org.gal.cmscli.dsl.constrainedByProperty
 import org.gal.cmscli.dsl.dependsOnBean
 import org.gal.cmscli.dsl.filteringBean
-import org.gal.cmscli.finder.findSmartEditBeansFile
-import org.gal.cmscli.finder.findSmartEditComponentsFile
+import org.gal.cmscli.finder.*
 import java.io.File
 
 private const val ITEM_TYPES_CLOSING_TAG = "</itemtypes>"
@@ -18,13 +17,17 @@ fun main() {
     val itemTypes = generateComponents()
     val componentFile = findSmartEditComponentsFile()
     val beanFile = findSmartEditBeansFile()
+    val deLabelsFile = findSmartEditDeLabelsFile()
+    val frLabelsFile = findSmartEditFrLabelsFile()
+    val itLabelsFile = findSmartEditItLabelsFile()
+    val enLabelsFile = findSmartEditEnLabelsFile()
     // TODO: enhance performances using RandomAccessFile to avoid rewriting all files
-    componentFile?.also {
-        generateAndWriteItemsTypesToSmartEditXml(it, itemTypes)
-    }
-    beanFile?.also {
-        generateAndWriteBeansToSmartEdit(beanFile, itemTypes)
-    }
+    componentFile?.also { generateAndWriteItemsTypesToSmartEditXml(it, itemTypes) }
+    beanFile?.also { generateAndWriteBeansToSmartEdit(it, itemTypes) }
+    deLabelsFile?.also { generateAndWriteLabelsToSmartEdit(it, itemTypes) }
+    frLabelsFile?.also { generateAndWriteLabelsToSmartEdit(it, itemTypes) }
+    itLabelsFile?.also { generateAndWriteLabelsToSmartEdit(it, itemTypes) }
+    enLabelsFile?.also { generateAndWriteLabelsToSmartEdit(it, itemTypes) }
 }
 
 private fun generateAndWriteItemsTypesToSmartEditXml(
@@ -81,4 +84,16 @@ private fun generateAndWriteBeansToSmartEdit(beanFile: File, itemTypes: List<Ite
     )
     beanFile.writeText(newContent)
     println("New beans are generated in ${beanFile.absolutePath}")
+}
+
+fun generateAndWriteLabelsToSmartEdit(labelsFile: File, itemTypes: List<ItemType>) {
+    itemTypes.forEach {
+        val componentLabel = "type.${it.code}.name=TODO"
+        val keys = it.attributes.getAttribute().map { attribute ->
+            "type.${it.code}.${attribute.qualifier}.name=TODO"
+        }
+        labelsFile.appendText("$componentLabel${System.lineSeparator()}")
+        labelsFile.appendText(keys.joinToString(System.lineSeparator()).plus(System.lineSeparator()))
+    }
+    println("New labels are generated in ${labelsFile.absolutePath}")
 }
