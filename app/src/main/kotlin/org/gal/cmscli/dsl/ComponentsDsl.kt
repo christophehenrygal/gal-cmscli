@@ -65,7 +65,7 @@ data class Attribute(
     @field:JacksonXmlProperty(isAttribute = true)
     var type: String = DEFAULT_ATTRIBUTE_TYPE,
     var description: String = "",
-    private var modifiers: Modifiers? = null,
+    private var modifiers: Modifiers = Modifiers(),
     private val persistence: Persistence = Persistence(),
 ) {
     fun modifiers(builder: @Scoped Modifiers.() -> Unit) {
@@ -83,7 +83,7 @@ data class Attribute(
 
 data class Modifiers(
     @field:JacksonXmlProperty(isAttribute = true)
-    var optional: Boolean = true,
+    var optional: Boolean = false,
 )
 
 data class Persistence(

@@ -4,7 +4,6 @@
 package org.gal.cmscli
 
 import org.gal.cmscli.dsl.ItemType
-import org.gal.cmscli.dsl.constrainedByProperty
 import org.gal.cmscli.dsl.dependsOnBean
 import org.gal.cmscli.dsl.filteringBean
 import org.gal.cmscli.finder.*
@@ -14,7 +13,7 @@ private const val ITEM_TYPES_CLOSING_TAG = "</itemtypes>"
 private const val BEANS_TYPE_CLOSING_TAG = "</beans>"
 
 fun main() {
-    val itemTypes = generateComponents()
+    val itemTypes = generateComponents().also { it.generateJaloClass() }
     val componentFile = findSmartEditComponentsFile()
     val beanFile = findSmartEditBeansFile()
     val deLabelsFile = findSmartEditDeLabelsFile()
@@ -28,6 +27,10 @@ fun main() {
     frLabelsFile?.also { generateAndWriteLabelsToSmartEdit(it, itemTypes) }
     itLabelsFile?.also { generateAndWriteLabelsToSmartEdit(it, itemTypes) }
     enLabelsFile?.also { generateAndWriteLabelsToSmartEdit(it, itemTypes) }
+}
+
+private fun List<ItemType>.generateJaloClass() {
+    forEach { it.jaloclass = "net.netconomy.gal.smartedit.jalo.${it.code}" }
 }
 
 private fun generateAndWriteItemsTypesToSmartEditXml(
@@ -48,7 +51,37 @@ private fun generateAndWriteItemsTypesToSmartEditXml(
 
 private fun generateAndWriteBeansToSmartEdit(beanFile: File, itemTypes: List<ItemType>) {
     val oldContent = beanFile.readText()
-    val xmlToAppend = itemTypes.filter { it.isOrdered }
+    val orderedBeanXmlToAppend = generateOrderedBeans(itemTypes)
+    val mandatoryAttributeBeansXmlToAppend = generateMandatoryAttributeBeans(itemTypes)
+    val newContent = oldContent.replace(
+        BEANS_TYPE_CLOSING_TAG,
+        "$orderedBeanXmlToAppend${System.lineSeparator()}$mandatoryAttributeBeansXmlToAppend${System.lineSeparator()}$BEANS_TYPE_CLOSING_TAG"
+    )
+    beanFile.writeText(newContent)
+    println("New beans are generated in ${beanFile.absolutePath}")
+}
+
+private fun generateMandatoryAttributeBeans(itemTypes: List<ItemType>): String {
+    return itemTypes.map {
+        it.attributes.getAttribute()
+            .filter { attribute -> attribute.getModifiers().optional.not() }
+            .map { attribute -> // No need to use Jackson for this simple XML template
+            """
+            <bean class="de.hybris.platform.cmsfacades.types.service.impl.DefaultComponentTypeAttributeStructure" p:typecode="${it.code}" p:qualifier="${attribute.qualifier}">
+                <property name="populators">
+                    <set>
+                        <ref bean="requiredComponentTypeAttributePopulator" />
+                    </set>
+                </property>
+            </bean>
+            """.trimIndent()
+        }.joinToString(System.lineSeparator())
+    }.joinToString(System.lineSeparator())
+}
+
+// TODO: Check if can be simplified with template like for mandatory beans
+private fun generateOrderedBeans(itemTypes: List<ItemType>): String {
+    return itemTypes.filter { it.isOrdered }
         .map {
             val customAttributeFilterName = "custom${it.code}AttributeFilter"
             filteringBean {
@@ -77,13 +110,6 @@ private fun generateAndWriteBeansToSmartEdit(beanFile: File, itemTypes: List<Ite
                     }.toXml()
                 )
         }.joinToString(System.lineSeparator())
-
-    val newContent = oldContent.replace(
-        BEANS_TYPE_CLOSING_TAG,
-        "$xmlToAppend${System.lineSeparator()}$BEANS_TYPE_CLOSING_TAG"
-    )
-    beanFile.writeText(newContent)
-    println("New beans are generated in ${beanFile.absolutePath}")
 }
 
 fun generateAndWriteLabelsToSmartEdit(labelsFile: File, itemTypes: List<ItemType>) {
