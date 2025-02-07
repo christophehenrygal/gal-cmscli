@@ -6,3 +6,5 @@ app/build
 
 galsmarteditmodule-itemsCache.txt
 galsmarteditmodule-springCache.txt
+
+./app/src/main/kotlin/org/gal/cmscli/ComponentsToAdd.kt
